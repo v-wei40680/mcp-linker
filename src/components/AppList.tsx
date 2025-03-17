@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardDescription,
@@ -15,22 +14,45 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Apps } from "./data";
+import { useStore } from "@/lib/stores";
+
 interface serverConfig {
   command: string;
   args: string[];
   env: Record<string, string>;
 }
 
+interface FormState {
+  args: string;
+  env: Record<string, string>;
+}
+
 export function AppList() {
   const [openDialog, setOpenDialog] = useState<number | null>(null);
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formStates, setFormStates] = useState<Record<number, FormState>>({});
+  const selectedClient = useStore((state: any) => state.selectedClient);
+
+  const initializeFormState = (app: typeof Apps[0]) => {
+    if (!formStates[app.id]) {
+      setFormStates(prev => ({
+        ...prev,
+        [app.id]: {
+          args: app.args,
+          env: app.env || {}
+        }
+      }));
+    }
+  };
 
   async function updateConfig(selectedServer: string, value: serverConfig) {
     try {
       await invoke("update_key", {
+        client: selectedClient,
+        user_path: "",
         key: selectedServer,
         value: value,
       });
@@ -39,16 +61,39 @@ export function AppList() {
 
   const handleSubmit = async (appId: number) => {
     const app = Apps.find((a) => a.id === appId);
+    const formState = formStates[appId];
 
-    if (app) {
+    if (app && formState) {
       await updateConfig(app.name, {
         command: app.command,
-        args: app.args.split(" "),
-        env: app.env ? app.env : {},
+        args: formState.args.split(" "),
+        env: formState.env,
       });
-      // 这里可以添加你的提交逻辑，例如 API 调用
-      setOpenDialog(null); // 提交后关闭对话框
+      setOpenDialog(null);
     }
+  };
+
+  const handleArgsChange = (appId: number, value: string) => {
+    setFormStates(prev => ({
+      ...prev,
+      [appId]: {
+        ...prev[appId],
+        args: value
+      }
+    }));
+  };
+
+  const handleEnvChange = (appId: number, key: string, value: string) => {
+    setFormStates(prev => ({
+      ...prev,
+      [appId]: {
+        ...prev[appId],
+        env: {
+          ...prev[appId].env,
+          [key]: value
+        }
+      }
+    }));
   };
 
   return (
@@ -65,7 +110,9 @@ export function AppList() {
                 open={openDialog === app.id}
                 onOpenChange={(open) => {
                   setOpenDialog(open ? app.id : null);
-                  if (!open) setFormData({});
+                  if (open) {
+                    initializeFormState(app);
+                  }
                 }}
               >
                 <DialogTrigger asChild>
@@ -83,11 +130,14 @@ export function AppList() {
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                       <Label>Command</Label>
-                      <Input value={app.command} disabled />
+                      <Input value={app.command} readOnly />
                     </div>
                     <div className="grid gap-2">
                       <Label>args</Label>
-                      <Input value={app.args} />
+                      <Input 
+                        value={formStates[app.id]?.args || app.args}
+                        onChange={(e) => handleArgsChange(app.id, e.target.value)}
+                      />
                     </div>
                     {app.env && (
                       <div className="grid gap-2">
@@ -100,7 +150,8 @@ export function AppList() {
                             <Label className="col-span-1">{key}</Label>
                             <Input
                               className="col-span-3"
-                              defaultValue={value}
+                              value={formStates[app.id]?.env[key] || value}
+                              onChange={(e) => handleEnvChange(app.id, key, e.target.value)}
                               required
                             />
                           </div>

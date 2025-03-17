@@ -4,10 +4,16 @@ import { Home, Compass, Grid3X3, Award, Download, Clock } from "lucide-react";
 import SelectClient from "./SelectClient";
 import { AppList } from "./AppList";
 import McpManage from "./McpManage";
+import LangSelect from "./LangSelect";
+import FolderSelect from "./FolderSelect";
+import { useStore } from "@/lib/stores";
+import { Input } from "./ui/input";
 
 // App component
 const AppStore = () => {
   const { t } = useTranslation();
+  const selectedFolder = useStore((state) => state.selectedFolder);
+  const selectedClient = useStore((state) => state.selectedClient);
 
   // Define the app categories and their content
   const appCategories = [
@@ -56,7 +62,6 @@ const AppStore = () => {
     if (selectedCategory.id === "discover") {
       return (
         <div className="p-8">
-          <SelectClient />
           <h1 className="text-3xl font-bold mb-8">
             {t("categories.discover")}
           </h1>
@@ -79,7 +84,12 @@ const AppStore = () => {
         </div>
       );
     } else if (selectedCategory.id === "manage") {
-      return <McpManage />;
+      return (
+        <div className="p-2">
+          {" "}
+          <McpManage />
+        </div>
+      );
     }
     return (
       <div className="flex items-center justify-center h-full">
@@ -134,7 +144,21 @@ const AppStore = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-auto mt-8">{renderContent()}</div>
+      <div className="flex-1 overflow-auto">
+        <div className="flex justify-between pt-2 px-2">
+          {selectedClient && selectedClient !== "claude" && <FolderSelect />}
+          <span className="w-64">
+            <SelectClient />
+          </span>
+
+          {selectedClient && selectedClient !== "claude" && (
+            <Input value={selectedFolder || ""} readOnly />
+          )}
+          <LangSelect />
+        </div>
+
+        {renderContent()}
+      </div>
     </div>
   );
 };

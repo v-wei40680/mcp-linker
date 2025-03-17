@@ -14,7 +14,7 @@ interface ClientProviderProps {
 }
 
 export function ClientProvider({ children }: ClientProviderProps) {
-  const [selectedClient, setSelectedClient] = useState<string>("Claude");
+  const [selectedClient, setSelectedClient] = useState<string>("claude");
 
   const handleClientChange = (value: string) => {
     setSelectedClient(value);

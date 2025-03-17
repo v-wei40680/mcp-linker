@@ -1,3 +1,4 @@
+import { useState, forwardRef } from "react";
 import {
   Select,
   SelectContent,
@@ -5,24 +6,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useClient } from "@/lib/ClientContext";
+import { useStore } from "@/lib/stores";
 
-export default function SelectClient() {
-  const { selectedClient, handleClientChange } = useClient();
-  const clients: string[] = ["Claude", "cursor"];
+const SelectClient = forwardRef<HTMLButtonElement>((props, ref) => {
+  const [client, setClient] = useState("claude");
+  const setSelectedClient = useStore((state: any) => state.setSelectedClient);
+  const mcpClients: string[] = ["claude", "cursor"];
+
+  function handleClientChange(client: string) {
+    setClient(client);
+    setSelectedClient(client);
+    console.log(client);
+  }
 
   return (
-    <Select value={selectedClient} onValueChange={handleClientChange}>
-      <SelectTrigger className="w-full" id="client-select">
+    <Select value={client} onValueChange={handleClientChange}>
+      <SelectTrigger 
+        ref={ref}
+        className="w-full capitalize" 
+        id="client-select"
+        aria-label="Select AI client"
+      >
         <SelectValue placeholder="Select a client" />
       </SelectTrigger>
       <SelectContent>
-        {clients.map((client) => (
-          <SelectItem key={client} value={client}>
-            {client}
+        {mcpClients.map((mcpClient) => (
+          <SelectItem key={mcpClient} value={mcpClient}>
+            {mcpClient}
           </SelectItem>
         ))}
       </SelectContent>
     </Select>
   );
-}
+});
+
+SelectClient.displayName = "SelectClient";
+
+export default SelectClient;

@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useStore } from "@/lib/stores";
 
 const envSchema = z.object({
   key: z.string().min(1, "Key is required"),
@@ -252,6 +253,9 @@ export function ServerCard({
 }
 
 export default function UpdateCard() {
+  const selectedClient = useStore((state: any) => state.selectedClient);
+  const selectedFolder = useStore((state: any) => state.selectedFolder);
+
   const [config, setConfig] = useState<ConfigType>({
     mcpServers: {
       server1: {
@@ -266,7 +270,10 @@ export default function UpdateCard() {
 
   async function loadConfig() {
     try {
-      const data = await invoke<ConfigType>("read_json");
+      const data = await invoke<ConfigType>("read_json", {
+        client: selectedClient,
+        user_path: selectedFolder,
+      });
       if (data) {
         setConfig(data);
       }
@@ -278,19 +285,28 @@ export default function UpdateCard() {
 
   useEffect(() => {
     loadConfig();
-  }, []);
+  }, [selectedClient]);
 
   const handleUpdate = async (
     key: string,
     updatedConfig: ConfigType["mcpServers"][string],
   ) => {
-    await invoke("update_key", { key, value: updatedConfig });
-    await loadConfig();
+    try {
+      await invoke("update_key", {
+        client: selectedClient,
+        key,
+        user_path: selectedFolder,
+        value: updatedConfig,
+      });
+      await loadConfig();
+    } catch (error) {
+      console.error(`Error update_key: ${error}`);
+    }
   };
 
   async function deleteConfigKey(key: string) {
     try {
-      await invoke("delete_key", { key });
+      await invoke("delete_key", { client: selectedClient, userpath: "", key });
       await loadConfig();
       console.log("Key deleted successfully");
     } catch (error) {
