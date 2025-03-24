@@ -11,6 +11,9 @@
     "fs:default",
     "fs:default",
     "fs:default",
-    "dialog:default"
+    "opener:default",
+    "shell:default",
+    "dialog:default",
+    "os:default"
   ]
 }

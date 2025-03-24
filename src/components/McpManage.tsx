@@ -23,7 +23,6 @@ import { Input } from "@/components/ui/input";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useStore } from "@/lib/stores";
 
 const envSchema = z.object({
   key: z.string().min(1, "Key is required"),
@@ -228,34 +227,21 @@ export function ServerCard({
               {config.command}
             </span>
           </div>
-          <div className="flex flex-col">
-            <span className="font-medium">Args:</span>
-            <span className="text-muted-foreground break-words">
-              {config.args.join(" ")}
-            </span>
-          </div>
-          {config.env && Object.keys(config.env).length > 0 && (
-            <div className="flex flex-col">
-              <span className="font-medium">Env:</span>
-              <ul className="mt-1 space-y-1 list-disc list-inside text-muted-foreground">
-                {Object.entries(config.env).map(([key, value]) => (
-                  <li key={key} className="break-words">
-                    <span className="font-medium">{key}:</span> {value}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
   );
 }
 
-export default function UpdateCard() {
-  const selectedClient = useStore((state: any) => state.selectedClient);
-  const selectedFolder = useStore((state: any) => state.selectedFolder);
+interface McpServerProps {
+  selectedApp: string;
+  selectedPath: string;
+}
 
+export default function McpManage({
+  selectedApp,
+  selectedPath,
+}: McpServerProps) {
   const [config, setConfig] = useState<ConfigType>({
     mcpServers: {
       server1: {
@@ -268,35 +254,47 @@ export default function UpdateCard() {
     },
   });
 
+  useEffect(() => {
+    if (!selectedApp || (selectedApp !== "claude" && !selectedPath)) {
+      return;
+    }
+
+    loadConfig();
+  }, [selectedApp, selectedPath]);
+
   async function loadConfig() {
-    try {
-      const data = await invoke<ConfigType>("read_json", {
-        client: selectedClient,
-        user_path: selectedFolder,
-      });
-      if (data) {
-        setConfig(data);
+    if (selectedApp === "claude" || selectedPath) {
+      try {
+        console.log("folder", selectedPath);
+        const data = await invoke<ConfigType>("read_json_file", {
+          appName: selectedApp,
+          path: selectedPath || undefined,
+        });
+        console.log("data", data);
+
+        if (data) {
+          setConfig(data);
+        }
+        console.log("Config loaded successfully", data);
+      } catch (error) {
+        setConfig({ mcpServers: {} });
+        console.error(`Error loading config: ${error}`);
       }
-      console.log("Config loaded successfully");
-    } catch (error) {
-      console.error(`Error loading config: ${error}`);
+    } else {
+      setConfig({ mcpServers: {} });
     }
   }
-
-  useEffect(() => {
-    loadConfig();
-  }, [selectedClient]);
 
   const handleUpdate = async (
     key: string,
     updatedConfig: ConfigType["mcpServers"][string],
   ) => {
     try {
-      await invoke("update_key", {
-        client: selectedClient,
-        key,
-        user_path: selectedFolder,
-        value: updatedConfig,
+      await invoke("update_mcp_server", {
+        appName: selectedApp,
+        path: selectedPath || undefined,
+        serverName: key,
+        serverConfig: updatedConfig,
       });
       await loadConfig();
     } catch (error) {
@@ -306,7 +304,11 @@ export default function UpdateCard() {
 
   async function deleteConfigKey(key: string) {
     try {
-      await invoke("delete_key", { client: selectedClient, userpath: "", key });
+      await invoke("remove_mcp_server", {
+        appName: selectedApp,
+        path: selectedPath || undefined,
+        serverName: key,
+      });
       await loadConfig();
       console.log("Key deleted successfully");
     } catch (error) {

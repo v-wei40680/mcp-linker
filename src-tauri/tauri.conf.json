@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/v2/config.json",
-  "productName": "mcp-store",
+  "productName": "MCP Store",
   "version": "0.1.0",
   "identifier": "com.mcp-store.app",
   "build": {
@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "mcp-store",
-        "width": 960,
-        "height": 720
+        "width": 1280,
+        "height": 960
       }
     ],
     "security": {

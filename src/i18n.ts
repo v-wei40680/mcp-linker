@@ -9,6 +9,8 @@ declare module "i18next" {
     resources: {
       translation: {
         welcome: string;
+        get: string;
+        addTo: string;
         appStore: string;
         categories: {
           discover: string;
@@ -46,7 +48,8 @@ declare module "i18next" {
 const resources = {
   en: {
     translation: {
-      welcome: "Welcome to my app!",
+      get: "Get",
+      addTo: "Add to",
       appStore: "MCP Store",
       categories: {
         discover: "Discover",
@@ -79,7 +82,8 @@ const resources = {
   },
   zh: {
     translation: {
-      welcome: "欢迎使用我的应用！",
+      get: "获取",
+      addTo: "添加到",
       appStore: "MCP Store",
       categories: {
         discover: "发现",
@@ -112,7 +116,8 @@ const resources = {
   },
   es: {
     translation: {
-      welcome: "¡Bienvenido a mi aplicación!",
+      get: "Get",
+      addTo: "Add to",
       appStore: "MCP Store",
       categories: {
         discover: "Descubrir",

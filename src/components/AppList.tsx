@@ -1,173 +1,162 @@
+// AppList.tsx (updated)
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Apps } from "./data";
-import { useStore } from "@/lib/stores";
+import { mcpServers } from "../lib/data";
+import type { Server, serverConfig } from "../types";
+import { open } from "@tauri-apps/plugin-shell";
+import { ServerConfigDialog } from "./ServerConfigDialog";
+import { useTranslation } from "react-i18next";
+import { Flame, Github } from "lucide-react";
+import { toast } from "sonner";
 
-interface serverConfig {
-  command: string;
-  args: string[];
-  env: Record<string, string>;
+interface AppListProps {
+  selectedApp: string;
+  selectedPath: string;
 }
 
-interface FormState {
-  args: string;
-  env: Record<string, string>;
-}
+export function AppList({ selectedApp, selectedPath }: AppListProps) {
+  const { t } = useTranslation();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentServer, setCurrentServer] = useState<Server | null>(null);
+  const [config, setConfig] = useState<serverConfig | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-export function AppList() {
-  const [openDialog, setOpenDialog] = useState<number | null>(null);
-  const [formStates, setFormStates] = useState<Record<number, FormState>>({});
-  const selectedClient = useStore((state: any) => state.selectedClient);
+  const filteredServers = mcpServers.filter(
+    (server) =>
+      server.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      server.description.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
-  const initializeFormState = (app: typeof Apps[0]) => {
-    if (!formStates[app.id]) {
-      setFormStates(prev => ({
-        ...prev,
-        [app.id]: {
-          args: app.args,
-          env: app.env || {}
-        }
-      }));
-    }
+  const openDialog = (server: Server) => {
+    setCurrentServer(server);
+    const currentConfig = server.configs[0];
+    const env = currentConfig.env
+      ? Object.fromEntries(
+          Object.entries(currentConfig.env).map(([key]) => [key, ""]),
+        )
+      : {};
+    const newConfig = {
+      command: currentConfig.command,
+      env: env,
+      args: currentConfig.args,
+    };
+    setConfig(newConfig);
+    setIsDialogOpen(true);
   };
 
   async function updateConfig(selectedServer: string, value: serverConfig) {
     try {
-      await invoke("update_key", {
-        client: selectedClient,
-        user_path: "",
-        key: selectedServer,
-        value: value,
+      await invoke("add_mcp_server", {
+        appName: selectedApp,
+        path: selectedPath,
+        serverName: selectedServer,
+        serverConfig: value,
       });
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  const handleSubmit = async (appId: number) => {
-    const app = Apps.find((a) => a.id === appId);
-    const formState = formStates[appId];
-
-    if (app && formState) {
-      await updateConfig(app.name, {
-        command: app.command,
-        args: formState.args.split(" "),
-        env: formState.env,
-      });
-      setOpenDialog(null);
+  const handleSubmit = async () => {
+    let app = null;
+    if (currentServer) {
+      app = mcpServers.find((a) => a.source === currentServer.source);
+    }
+    if (app && config) {
+      await updateConfig(app.name, config);
+      toast.success("OK");
+      setIsDialogOpen(false);
     }
   };
 
-  const handleArgsChange = (appId: number, value: string) => {
-    setFormStates(prev => ({
-      ...prev,
-      [appId]: {
-        ...prev[appId],
-        args: value
-      }
-    }));
+  const handleArgsChange = (value: string) => {
+    if (config) {
+      setConfig({ ...config, args: value.split(" ") });
+    }
   };
 
-  const handleEnvChange = (appId: number, key: string, value: string) => {
-    setFormStates(prev => ({
-      ...prev,
-      [appId]: {
-        ...prev[appId],
-        env: {
-          ...prev[appId].env,
-          [key]: value
-        }
-      }
-    }));
+  const handleEnvChange = (key: string, value: string) => {
+    if (config) {
+      setConfig({ ...config, env: { ...config.env, [key]: value } });
+    }
   };
+
+  function openUrl(url: string, branch = "main") {
+    if (url.includes("github.com") && url.includes("modelcontextprotocol")) {
+      const parts = url.split("/src/");
+      const baseUrl = parts[0];
+      const path = parts[1] ? `/src/${parts[1]}` : "";
+      url = `${baseUrl}/tree/${branch}${path}`;
+    }
+    console.log(url);
+    open(url);
+  }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {Apps.map((app) => (
-        <Card key={app.id}>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>{app.name}</CardTitle>
-                <CardDescription>{app.description}</CardDescription>
+    <div>
+      <Input
+        type="text"
+        placeholder="Search servers by name..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ marginBottom: "1rem", padding: "0.5rem" }}
+      />
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {filteredServers.map((app) => (
+          <Card key={app.source} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="space-y-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">
+                  <span
+                    className="flex items-center gap-2 cursor-pointer hover:text-blue-500 hover:underline"
+                    onClick={() => openUrl(app.source || "")}
+                  >
+                    {app.name} <Github size={18} />
+                  </span>
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  {app.is_official && (
+                    <span className="text-green-500" title="Official">✅</span>
+                  )}
+                  {app.is_hot && (
+                    <span className="text-orange-500" title="Hot">
+                      <Flame size={18} />
+                    </span>
+                  )}
+                </div>
               </div>
-              <Dialog
-                open={openDialog === app.id}
-                onOpenChange={(open) => {
-                  setOpenDialog(open ? app.id : null);
-                  if (open) {
-                    initializeFormState(app);
-                  }
-                }}
+              
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">By {app.developer}</p>
+                <p className="text-sm line-clamp-2">{app.description || ""}</p>
+              </div>
+
+              <Button 
+                className="w-full" 
+                onClick={() => openDialog(app)}
+                variant="default"
               >
-                <DialogTrigger asChild>
-                  <Button className="bg-gray-200 text-blue-600 py-1 px-3 rounded text-sm font-medium">
-                    Get
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{app.name} Configuration</DialogTitle>
-                    <DialogDescription>
-                      Configure the command args and environment variables
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label>Command</Label>
-                      <Input value={app.command} readOnly />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>args</Label>
-                      <Input 
-                        value={formStates[app.id]?.args || app.args}
-                        onChange={(e) => handleArgsChange(app.id, e.target.value)}
-                      />
-                    </div>
-                    {app.env && (
-                      <div className="grid gap-2">
-                        <h2>env</h2>
-                        {Object.entries(app.env).map(([key, value]) => (
-                          <div
-                            key={key}
-                            className="grid grid-cols-2 items-center gap-2"
-                          >
-                            <Label className="col-span-1">{key}</Label>
-                            <Input
-                              className="col-span-3"
-                              value={formStates[app.id]?.env[key] || value}
-                              onChange={(e) => handleEnvChange(app.id, key, e.target.value)}
-                              required
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <Button onClick={() => handleSubmit(app.id)}>
-                    Add server
-                  </Button>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-        </Card>
-      ))}
+                {t("get")}
+              </Button>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+
+      <ServerConfigDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        currentServer={currentServer}
+        selectedApp={selectedApp}
+        config={config}
+        setConfig={setConfig}
+        handleSubmit={handleSubmit}
+        handleArgsChange={handleArgsChange}
+        handleEnvChange={handleEnvChange}
+      />
     </div>
   );
 }

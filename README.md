@@ -1,7 +1,18 @@
-# Tauri + React + Typescript
+# MCP Store
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+add Model Context Protocol (MCP) server to your mcp client (claude cursor) with two click. get and add.
 
-## Recommended IDE Setup
+[official servers](https://github.com/modelcontextprotocol/servers)
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+if you want to contribute, fork and pull requests add your project to folder `servers` and add `mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "example-mcp": {
+      "command": "uvx",
+      "args": ["example-mcp"]
+    }
+  }
+}
+```
