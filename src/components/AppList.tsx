@@ -78,6 +78,12 @@ export function AppList({ selectedApp, selectedPath }: AppListProps) {
     }
   };
 
+  const handleCommandChange = (value: string) => {
+    if (config) {
+      setConfig({ ...config, command: value });
+    }
+  };
+
   const handleEnvChange = (key: string, value: string) => {
     if (config) {
       setConfig({ ...config, env: { ...config.env, [key]: value } });
@@ -155,6 +161,7 @@ export function AppList({ selectedApp, selectedPath }: AppListProps) {
         setConfig={setConfig}
         handleSubmit={handleSubmit}
         handleArgsChange={handleArgsChange}
+        handleCommandChange={handleCommandChange}
         handleEnvChange={handleEnvChange}
       />
     </div>

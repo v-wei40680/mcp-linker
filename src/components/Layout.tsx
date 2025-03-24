@@ -98,10 +98,10 @@ const AppStore = ({
       {/* Sidebar */}
       <div className="w-64 bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
         <div className="p-4">
-          <div className="flex">
+          <div className="flex gap-2 cursor-pointer hover:text-blue-500 hover:underline">
 
           <Github />
-          <a onClick={() => open("https://github.com/milisp/mcp-store")} className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+          <a onClick={() => open("https://github.com/milisp/mcp-store")} className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
           {t("appStore")} 
           </a>
           </div>
