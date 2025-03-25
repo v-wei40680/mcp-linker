@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { mcpServers } from "../lib/data";
+import { mcpServers, needspathClient } from "../lib/data";
 import type { Server, serverConfig } from "../types";
 import { open } from "@tauri-apps/plugin-shell";
 import { ServerConfigDialog } from "./ServerConfigDialog";
@@ -17,7 +17,7 @@ interface AppListProps {
   selectedPath: string;
 }
 
-export function AppList({ selectedApp, selectedPath }: AppListProps) {
+export function ClientList({ selectedApp, selectedPath }: AppListProps) {
   const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentServer, setCurrentServer] = useState<Server | null>(null);
@@ -61,20 +61,45 @@ export function AppList({ selectedApp, selectedPath }: AppListProps) {
   }
 
   const handleSubmit = async () => {
-    let app = null;
-    if (currentServer) {
-      app = mcpServers.find((a) => a.source === currentServer.source);
+    if (needspathClient.includes(selectedApp) && !selectedPath) {
+      toast.error("Path is required");
+      return;
     }
-    if (app && config) {
-      await updateConfig(app.name, config);
-      toast.success("OK");
-      setIsDialogOpen(false);
+    if (!currentServer) {
+      toast.error("Please select a server");
+      return;
+    }
+
+    const client = mcpServers.find((a) => a.source === currentServer.source);
+    if (!client) {
+      toast.error("Client not found");
+      return;
+    }
+
+    if (client && config) {
+      try {
+        await updateConfig(client.name, config);
+        alert(1);
+        setIsDialogOpen(false);
+        setTimeout(() => {
+          toast.success("Configuration updated successfully");
+        }, 3000);
+        alert(2);
+      } catch (error) {
+        console.error("Failed to update config:", error);
+        toast.error("Failed to update configuration");
+        alert(3);
+      }
     }
   };
 
   const handleArgsChange = (value: string) => {
     if (config) {
-      setConfig({ ...config, args: value.split(" ") });
+      // Only update if the value has actually changed
+      const newArgs = value.split(" ").filter((arg) => arg !== "");
+      if (JSON.stringify(newArgs) !== JSON.stringify(config.args)) {
+        setConfig({ ...config, args: newArgs });
+      }
     }
   };
 
@@ -125,7 +150,9 @@ export function AppList({ selectedApp, selectedPath }: AppListProps) {
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   {app.is_official && (
-                    <span className="text-green-500" title="Official">✅</span>
+                    <span className="text-green-500" title="Official">
+                      ✅
+                    </span>
                   )}
                   {app.is_hot && (
                     <span className="text-orange-500" title="Hot">
@@ -134,14 +161,16 @@ export function AppList({ selectedApp, selectedPath }: AppListProps) {
                   )}
                 </div>
               </div>
-              
+
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">By {app.developer}</p>
+                <p className="text-sm text-muted-foreground">
+                  By {app.developer}
+                </p>
                 <p className="text-sm line-clamp-2">{app.description || ""}</p>
               </div>
 
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 onClick={() => openDialog(app)}
                 variant="default"
               >

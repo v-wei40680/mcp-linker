@@ -9,7 +9,8 @@
     "configs": [
       {
         "command": "uvx",
-        "args": ["blender-mcp"]
+        "args": ["blender-mcp"],
+        "disabled": false
       }
     ]
   },

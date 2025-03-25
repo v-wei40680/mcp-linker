@@ -9,13 +9,13 @@ import {
 interface AppOption {
   id: string;
   name: string;
-  needsPath: boolean;
 }
 
 const appOptions: AppOption[] = [
-  { id: "claude", name: "Claude", needsPath: false },
-  { id: "cursor", name: "Cursor", needsPath: true },
-  { id: "custom", name: "Custom", needsPath: true },
+  { id: "claude", name: "Claude" },
+  { id: "cursor", name: "Cursor" },
+  { id: "windsurf", name: "Windsurf" },
+  { id: "custom", name: "Custom" },
 ];
 
 interface AppSelectorProps {

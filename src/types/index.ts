@@ -2,6 +2,8 @@ export type serverConfig = {
   command: string;
   args?: string[];
   env?: Record<string, any>;
+  disabled?: boolean;
+  autoApprove?: string[];
 };
 
 export type Server = {
@@ -17,3 +19,10 @@ export type Server = {
   is_featured?: boolean;
   configs: serverConfig[];
 };
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: JSX.Element;
+  content: string;
+}

@@ -17,6 +17,7 @@ struct Config {
 
 mod app;
 mod cmd;
+mod installer;
 mod json_manager;
 
 fn update_env_path() {
@@ -55,9 +56,8 @@ pub fn run() {
             cmd::add_mcp_server,
             cmd::remove_mcp_server,
             cmd::update_mcp_server,
-            cmd::check_command_exists,
-            cmd::install_command,
-            cmd::install_uv,
+            installer::check_command_exists,
+            installer::install_command,
             get_path_env
         ])
         .run(tauri::generate_context!())

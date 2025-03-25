@@ -4,12 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface PathSelectorProps {
-  selectedApp: string;
   selectedPath: string;
   onChange: (path: string) => void;
 }
 
-export function PathSelector({ selectedApp, selectedPath, onChange }: PathSelectorProps) {
+export function PathSelector({ selectedPath, onChange }: PathSelectorProps) {
   const [isLoading, setIsLoading] = useState(false);
   
   const handleBrowse = async () => {
@@ -29,11 +28,6 @@ export function PathSelector({ selectedApp, selectedPath, onChange }: PathSelect
       setIsLoading(false);
     }
   };
-
-  // Hide for Claude which uses a fixed path
-  if (selectedApp === 'claude') {
-    return null;
-  }
 
   return (
     <div className="w-full">

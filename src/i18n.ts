@@ -10,6 +10,7 @@ declare module "i18next" {
       translation: {
         welcome: string;
         get: string;
+        install: string;
         addTo: string;
         appStore: string;
         categories: {
@@ -49,6 +50,7 @@ const resources = {
   en: {
     translation: {
       get: "Get",
+      install: "Install",
       addTo: "Add to",
       appStore: "MCP Store",
       categories: {
@@ -83,6 +85,7 @@ const resources = {
   zh: {
     translation: {
       get: "获取",
+      install: "安装",
       addTo: "添加到",
       appStore: "MCP Store",
       categories: {
@@ -117,6 +120,7 @@ const resources = {
   es: {
     translation: {
       get: "Get",
+      install: "Instalar",
       addTo: "Add to",
       appStore: "MCP Store",
       categories: {
@@ -124,6 +128,7 @@ const resources = {
         arcade: "Arcade",
         create: "Crear",
         work: "Trabajo",
+        manage: "Gestionar",
         updates: "Actualizaciones",
         recentlyAdded: "Añadido recientemente",
       },

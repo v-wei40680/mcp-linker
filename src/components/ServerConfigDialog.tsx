@@ -90,7 +90,10 @@ export function ServerConfigDialog({
             </div>
           )}
         </div>
-        <Button onClick={handleSubmit}>
+        <Button onClick={(e) => {
+          e.preventDefault(); // Prevent default form submission behavior
+          handleSubmit();
+        }}>
           {t("addTo")} {selectedApp}
         </Button>
       </DialogContent>

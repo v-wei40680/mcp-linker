@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { toast } from "sonner";
-import { Button } from "./ui/button";
-// import { useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
+import { Notifications, Notification } from "./ui/Notifications";
 
 type ToolStatus = {
   name: string;
@@ -11,11 +10,11 @@ type ToolStatus = {
   fallbackUrl?: string; // Add fallback URL for manual installation
 };
 
-const STORAGE_KEY = 'tools_check_status';
-const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const STORAGE_KEY = "tools_check_status";
 
 export default function InstallTools() {
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [toolsStatus, setToolsStatus] = useState<
     Record<string, boolean | null>
   >({
@@ -43,58 +42,28 @@ export default function InstallTools() {
     {
       name: "UV",
       cmd: "uv",
-      pkg: "astral/uv",
+      pkg: "uv",
       fallbackUrl: "https://github.com/astral-sh/uv",
     },
   ];
 
   useEffect(() => {
     if (firstLoad) {
-      loadOrCheckTools();
+      checkAllTools();
       setFirstLoad(false);
     }
   }, [firstLoad]);
 
-  const loadOrCheckTools = async () => {
-    try {
-      const cached = localStorage.getItem(STORAGE_KEY);
-      if (cached) {
-        const { status, timestamp } = JSON.parse(cached);
-        const now = Date.now();
-        
-        // If cache is still valid (less than 24 hours old)
-        if (now - timestamp < CACHE_DURATION) {
-          setToolsStatus(status);
-          // Show cached status without making system calls
-          Object.entries(status).forEach(([cmd, installed]) => {
-            const tool = toolsConfig.find(t => t.cmd === cmd);
-            if (tool) {
-              if (installed) {
-                toast.success(`${tool.name} is installed`, { duration: 1000 });
-              } else {
-                toast(`${tool.name} not installed`, {
-                  action: {
-                    label: "Install",
-                    onClick: async () => await installTool(tool),
-                  },
-                  duration: 5000,
-                });
-              }
-            }
-          });
-          return;
-        }
-      }
-      
-      // If no cache or cache expired, perform actual check
-      await checkAllTools();
-    } catch (error) {
-      console.error('Error loading cached status:', error);
-      await checkAllTools();
-    }
+  const addNotification = (notification: Omit<Notification, "id">) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setNotifications((prev) => [...prev, { ...notification, id }]);
   };
 
-  async function checkAllTools() {
+  const dismissNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  async function checkAllTools(click: boolean = false) {
     const updatedStatus = { ...toolsStatus };
 
     for (const tool of toolsConfig) {
@@ -107,109 +76,114 @@ export default function InstallTools() {
         );
 
         if (!installed) {
-          toast(`${tool.name} not installed`, {
+          // Remove any existing notifications for this tool
+          setNotifications((prev) =>
+            prev.filter(
+              (n) => !n.title.includes(tool.name) || n.type === "error",
+            ),
+          );
+
+          addNotification({
+            title: `${tool.name} is not installed`,
+            type: "info",
             action: {
-              label: "Install",
+              label: t("install"),
               onClick: async () => await installTool(tool),
+              loading: isInstalling[tool.cmd],
             },
-            duration: 5000,
           });
-        } else {
-          toast.success(`${tool.name} is installed`, { duration: 1000 });
+        } else if (click) {
+          // Only show installed notification on manual check
+          addNotification({
+            title: `${tool.name} is installed`,
+            type: "success",
+            autoClose: 3000, // Auto close after 3 seconds
+          });
         }
         updatedStatus[tool.cmd] = installed;
       } catch (error) {
         console.error(`Failed to check ${tool.name}:`, error);
         updatedStatus[tool.cmd] = false;
-        toast.error(`Failed to check ${tool.name}`);
+        addNotification({
+          title: `Failed to check ${tool.name}`,
+          type: "error",
+          message: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
     setToolsStatus(updatedStatus);
-    
+
     // Cache the results
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        status: updatedStatus,
-        timestamp: Date.now()
-      }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          status: updatedStatus,
+          timestamp: Date.now(),
+        }),
+      );
     } catch (error) {
-      console.error('Error caching status:', error);
+      console.error("Error caching status:", error);
     }
   }
 
   async function installTool(tool: ToolStatus) {
-    // Prevent multiple installation attempts
     if (isInstalling[tool.cmd]) {
       return;
     }
 
     setIsInstalling((prev) => ({ ...prev, [tool.cmd]: true }));
 
-    const toastId = toast.loading(`Installing ${tool.name}...`);
+    // Remove any existing notifications for this tool
+    setNotifications((prev) =>
+      prev.filter((n) => !n.title.includes(tool.name) || n.type === "error"),
+    );
+
+    const installingNotification = {
+      title: `Installing ${tool.name}...`,
+      type: "info" as const,
+    };
+
+    addNotification(installingNotification);
 
     try {
-      const result = await invoke<{ Ok: string } | { Err: string }>(
-        "install_command",
-        { packageName: tool.pkg, packageManage: "brew" },
+      const result = await invoke<string>("install_command", {
+        packageName: tool.pkg,
+      });
+      console.log(result);
+
+      // Remove the installing notification
+      setNotifications((prev) =>
+        prev.filter((n) => n.title !== installingNotification.title),
       );
 
-      if ("Ok" in result) {
-        toast.success(`${tool.name} installed successfully`, {
-          id: toastId,
-          duration: 2000,
-        });
-        setToolsStatus((prev) => ({
-          ...prev,
-          [tool.cmd]: true,
-        }));
-      } else {
-        toast.error(
-          <div>
-            <p>
-              Failed to install {tool.name}: {result.Err}
-            </p>
-            {tool.fallbackUrl && (
-              <p className="text-sm mt-1">
-                Please install manually from:
-                <a
-                  href={tool.fallbackUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline ml-1"
-                >
-                  {tool.fallbackUrl}
-                </a>
-              </p>
-            )}
-          </div>,
-          { id: toastId, duration: 10000 },
-        );
-      }
+      addNotification({
+        title: `${tool.name} installed successfully`,
+        type: "success",
+      });
+
+      setToolsStatus((prev) => ({
+        ...prev,
+        [tool.cmd]: true,
+      }));
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      toast.error(
-        <div>
-          <p>
-            Failed to install {tool.name}: {errorMessage}
-          </p>
-          {tool.fallbackUrl && (
-            <p className="text-sm mt-1">
-              Please install manually from:
-              <a
-                href={tool.fallbackUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline ml-1"
-              >
-                {tool.fallbackUrl}
-              </a>
-            </p>
-          )}
-        </div>,
-        { id: toastId, duration: 10000 },
+      // Remove the installing notification
+      setNotifications((prev) =>
+        prev.filter((n) => n.title !== installingNotification.title),
       );
+
+      addNotification({
+        title: `Failed to install ${tool.name}`,
+        type: "error",
+        message: error instanceof Error ? error.message : String(error),
+        action: tool.fallbackUrl
+          ? {
+              label: "Install manually",
+              onClick: () => window.open(tool.fallbackUrl, "_blank"),
+            }
+          : undefined,
+      });
       console.error(`Failed to install ${tool.name}:`, error);
     } finally {
       setIsInstalling((prev) => ({ ...prev, [tool.cmd]: false }));
@@ -217,8 +191,11 @@ export default function InstallTools() {
   }
 
   return (
-    <div className="flex relative group">
-      <Button onClick={() => checkAllTools()}>checkAllTools</Button>
-    </div>
+    <>
+      <Notifications
+        notifications={notifications}
+        onDismiss={dismissNotification}
+      />
+    </>
   );
 }

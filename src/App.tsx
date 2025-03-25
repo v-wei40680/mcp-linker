@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 
+import CommandChecker from "@/components/CommandChecker";
 import Layout from "./components/Layout";
 import "./App.css";
 
@@ -11,6 +12,7 @@ function App() {
 
   return (
     <ThemeProvider storageKey="vite-ui-theme">
+      <CommandChecker />
       <Layout
         selectedApp={selectedApp}
         setSelectedApp={setSelectedApp}
