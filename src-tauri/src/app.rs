@@ -31,6 +31,9 @@ impl AppConfig {
                 // For Cursor, we use the provided path + .cursor/mcp.json
                 PathBuf::from(base_path).join(".cursor/mcp.json")
             }
+            ("cursor", None) => {
+                PathBuf::from(home).join(".cursor/mcp.json") // 修复：添加默认路径
+            }
             ("windsurf", _) => {
                 PathBuf::from(home)
                     .join(".codeium/windsurf/mcp_config.json")

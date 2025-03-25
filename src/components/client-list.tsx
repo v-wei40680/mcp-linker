@@ -79,16 +79,11 @@ export function ClientList({ selectedApp, selectedPath }: AppListProps) {
     if (client && config) {
       try {
         await updateConfig(client.name, config);
-        alert(1);
         setIsDialogOpen(false);
-        setTimeout(() => {
-          toast.success("Configuration updated successfully");
-        }, 3000);
-        alert(2);
+        toast.success("Configuration updated successfully");
       } catch (error) {
         console.error("Failed to update config:", error);
         toast.error("Failed to update configuration");
-        alert(3);
       }
     }
   };

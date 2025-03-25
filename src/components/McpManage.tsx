@@ -44,72 +44,37 @@ export default function McpManage({
     updatedConfig: ConfigType["mcpServers"][string],
   ) => {
     try {
-      // Create a backup of the current config before update
-      const configBackup = JSON.parse(JSON.stringify(config));
-      
-      // Optimistically update UI first
-      setConfig(prev => ({
-        ...prev,
-        mcpServers: {
-          ...prev.mcpServers,
-          [key]: updatedConfig
-        }
-      }));
-      
-      // Then perform the actual backend operation
-      try {
-        await invoke("update_mcp_server", {
-          appName: selectedApp,
-          path: selectedPath || undefined,
-          serverName: key,
-          serverConfig: updatedConfig,
-        });
-        toast.success("Configuration updated successfully");
-      } catch (error) {
-        // If backend operation fails, restore the previous state
-        console.error(`Error updating config: ${error}`);
-        setConfig(configBackup);
-        toast.error("Failed to update configuration");
-        throw error; // Re-throw to prevent further execution
-      }
+      await invoke("update_mcp_server", {
+        appName: selectedApp,
+        path: selectedPath || undefined,
+        serverName: key,
+        serverConfig: updatedConfig,
+      });
+      toast.success("Configuration updated successfully");
     } catch (error) {
-      console.error(`Error in handleUpdate: ${error}`);
+      console.error(`Error updating config: ${error}`);
+      toast.error("Failed to update configuration");
     }
   };
 
   async function deleteConfigKey(key: string) {
     if (selectedApp === "cursor" && !selectedPath) {
-      toast.error("Cannot delete config: selectedPath is required for cursor app");
+      toast.error(
+        "Cannot delete config: selectedPath is required for cursor app",
+      );
       return;
     }
     try {
-      // Create a backup of the current config before deletion
-      const configBackup = JSON.parse(JSON.stringify(config));
-      
-      // Optimistically update UI first
-      setConfig(prev => {
-        const newServers = { ...prev.mcpServers };
-        delete newServers[key];
-        return { ...prev, mcpServers: newServers };
+      await invoke("remove_mcp_server", {
+        appName: selectedApp,
+        path: selectedPath || undefined,
+        serverName: key,
       });
-      
-      // Then perform the actual backend operation
-      try {
-        await invoke("remove_mcp_server", {
-          appName: selectedApp,
-          path: selectedPath || undefined,
-          serverName: key,
-        });
-        toast.success("Configuration deleted successfully");
-      } catch (error) {
-        // If backend operation fails, restore the previous state
-        console.error(`Error deleting config: ${error}`);
-        setConfig(configBackup);
-        toast.error("Failed to delete configuration");
-        throw error; // Re-throw to prevent further execution
-      }
+      toast.success("Configuration deleted successfully");
     } catch (error) {
-      console.error(`Error in deleteConfigKey: ${error}`);
+      // If backend operation fails, restore the previous state
+      console.error(`Error deleting config: ${error}`);
+      toast.error("Failed to delete configuration");
     }
   }
 
