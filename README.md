@@ -26,6 +26,9 @@ Check out the list of [official MCP servers](https://github.com/modelcontextprot
 ### Configuration Example
 ![Config Screenshot](./images/MCPStore-screenshot-config.png)
 
+### Configuration Example
+![Manage Screenshot](./images/MCPStore-screenshot-manage.png)
+
 ## Contributing
 
 We welcome contributions! To add your own MCP server:
