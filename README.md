@@ -48,4 +48,4 @@ We welcome contributions! To add your own MCP server:
 
 ## License
 
-MCP Store is open-source and licensed under MIT License.
+MCP Store is open-source and licensed under BSD License.
