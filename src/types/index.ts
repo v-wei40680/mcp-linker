@@ -1,4 +1,4 @@
-export type serverConfig = {
+export type ServerConfig = {
   command: string;
   args?: string[];
   env?: Record<string, any>;
@@ -6,8 +6,8 @@ export type serverConfig = {
   autoApprove?: string[];
 };
 
-export type Server = {
-  id?: number;
+export type ServerType = {
+  id?: string;
   name: string;
   developer?: string;
   icon_url?: string;
@@ -17,7 +17,7 @@ export type Server = {
   is_official?: boolean;
   is_hot?: boolean;
   is_featured?: boolean;
-  configs: serverConfig[];
+  configs: string;
 };
 
 export interface Category {

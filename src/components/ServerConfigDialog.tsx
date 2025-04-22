@@ -1,4 +1,7 @@
 // ServerConfigDialog.tsx
+import { useState, useEffect, forwardRef } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { needspathClient } from "../lib/data";
 import {
   Dialog,
   DialogContent,
@@ -10,93 +13,224 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import type { Server, serverConfig } from "../types";
+import type { ServerType, ServerConfig } from "../types";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 interface ServerConfigDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  currentServer: Server | null;
-  config: serverConfig | null;
+  setIsDialogOpen: (open: boolean) => void;
+  currentServer: ServerType;
   selectedApp: string;
-  setConfig: (config: serverConfig) => void;
-  handleSubmit: () => void;
-  handleArgsChange: (value: string) => void;
-  handleCommandChange: (value: string) => void;
-  handleEnvChange: (key: string, value: string) => void;
+  selectedPath: string;
+  mcpServers: any;
 }
 
-export function ServerConfigDialog({
+export const ServerConfigDialog = forwardRef<
+  HTMLDivElement,
+  ServerConfigDialogProps
+>(({
   isOpen,
-  onOpenChange,
+  setIsDialogOpen,
   currentServer,
   selectedApp,
-  config,
-  setConfig,
-  handleSubmit,
-  handleArgsChange,
-  handleCommandChange,
-  handleEnvChange,
-}: ServerConfigDialogProps) {
-  if (!config || !currentServer) return null;
+  selectedPath,
+  mcpServers,
+}, ref) => {
+  const [serverName, setServerName] = useState<string>('');
+  const [config, setConfig] = useState<ServerConfig | null>(null);
+  const [curIndex, setCurIndex] = useState<number>(0);
+  const [configs, setConfigs] = useState<ServerConfig[] | null>(null);
   const { t } = useTranslation();
 
+  // Add this near the other useState declarations
+  const [envValues, setEnvValues] = useState<Record<string, string>>({});
+
+  // Update useEffect to initialize envValues when config changes
+  useEffect(() => {
+    if (currentServer) {
+      setServerName(currentServer.name);
+      const parsedConfigs = JSON.parse(currentServer.configs);
+      setConfigs(parsedConfigs);
+
+      if (parsedConfigs?.length > 0) {
+        setConfig(parsedConfigs[0]);
+        setCurIndex(0);
+      }
+      // Initialize envValues with empty strings
+      if (parsedConfigs?.[0]?.env) {
+        const initialEnvValues = Object.keys(parsedConfigs[0].env).reduce((acc, key) => {
+          acc[key] = '';
+          return acc;
+        }, {} as Record<string, string>);
+        setEnvValues(initialEnvValues);
+      }
+    }
+  }, [currentServer]);
+
+  function handleServerNameChange(value: string) {
+    setServerName(value);
+  }
+
+  async function updateConfig(selectedServer: string, value: ServerConfig) {
+    try {
+      await invoke("add_mcp_server", {
+        appName: selectedApp,
+        path: selectedPath,
+        serverName: selectedServer,
+        serverConfig: value,
+      });
+      console.log("add server", new Date());
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const handleSubmit = async () => {
+    if (needspathClient.includes(selectedApp) && !selectedPath) {
+      toast.error("Path is required");
+      return;
+    }
+    if (!currentServer) {
+      toast.error("Please select a server");
+      return;
+    }
+
+    const client = mcpServers.find((s: ServerType) => s.source === currentServer.source);
+    if (!client) {
+      toast.error("Client not found");
+      return;
+    }
+
+    if (client && config) {
+      try {
+        await updateConfig(client.name, config);
+        setIsDialogOpen(false);
+        toast.success("Configuration updated successfully");
+      } catch (error) {
+        console.error("Failed to update config:", error);
+        toast.error("Failed to update configuration");
+      }
+    }
+  };
+
+  const handleArgsChange = (value: string) => {
+    if (config) {
+      // Only update if the value has actually changed
+      const newArgs = value.split(" ").filter((arg) => arg !== "");
+      if (JSON.stringify(newArgs) !== JSON.stringify(config.args)) {
+        setConfig({ ...config, args: newArgs });
+      }
+    }
+  };
+
+  const handleCommandChange = (value: string) => {
+    if (config) {
+      setConfig({ ...config, command: value });
+    }
+  };
+
+  const handleEnvChange = (key: string, value: string) => {
+    if (config) {
+      setConfig({ ...config, env: { ...config.env, [key]: value } });
+    }
+  };
+
+  function changeCurrentConfig(c: ServerConfig, index: number) {
+    setConfig(c);
+    setCurIndex(index);
+  }
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-auto bg-background dark:bg-gray-800">
+    <Dialog open={isOpen} onOpenChange={setIsDialogOpen}>
+      <DialogContent className="overflow-y-auto max-h-[90vh] w-[90vw] max-w-3xl bg-background dark:bg-gray-800">
         <DialogHeader>
-          <DialogTitle className="text-foreground dark:text-gray-100">{currentServer.name} Configuration</DialogTitle>
-          <DialogDescription className="text-muted-foreground dark:text-gray-400">
-            Configure the command args and environment variables
-          </DialogDescription>
+          <DialogTitle className="dark:text-white">config</DialogTitle>
+          <DialogDescription>server config</DialogDescription>
         </DialogHeader>
+        <div className="grid gap-2">
+          <Label className="text-foreground dark:text-gray-200">
+            Server Name
+          </Label>
+          <Input
+            value={serverName || ""}
+            onChange={(e) => handleServerNameChange(e.target.value)}
+            className="dark:bg-gray-800 dark:border-gray-500 dark:text-white"
+          />
+        </div>
 
         <div className="flex gap-2">
-          {currentServer.configs.map((c) => (
-            <Button key={c.command} onClick={() => setConfig(c)} variant="default">
-              {c.command}
-            </Button>
-          ))}
+          {currentServer && configs &&
+            configs.map((c, index) => (
+              <Button
+                key={`${c.command}-${index}-${Math.random()}`}
+                onClick={() => changeCurrentConfig(c, index)}
+                variant={`${curIndex == index ? "default" : "outline"}`}
+                aria-label={`Select ${c.command} configuration`}
+              >
+                {c.command}
+              </Button>
+            ))}
         </div>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label className="text-foreground dark:text-gray-100">Command</Label>
-            <Input value={config.command} onChange={(e) => handleCommandChange(e.target.value)} className="dark:bg-gray-700 dark:border-gray-600"  />
+            <Label className="text-foreground dark:text-gray-200">
+              Command
+            </Label>
+            <Input
+              value={config?.command || ''}
+              onChange={(e) => handleCommandChange(e.target.value)}
+              className="dark:bg-gray-800 dark:border-gray-500 dark:text-white"
+            />
           </div>
-          {config.args && (
+          {config && config.args && (
             <div className="grid gap-2">
-              <Label className="text-foreground dark:text-gray-100">args</Label>
+              <Label className="text-foreground dark:text-gray-200">args</Label>
               <Textarea
                 value={config.args.join(" ")}
                 onChange={(e) => handleArgsChange(e.target.value)}
-                className="dark:bg-gray-700 dark:border-gray-600"
+                className="dark:bg-gray-800 dark:border-gray-500 dark:text-white"
               />
             </div>
           )}
-          {config.env && (
+          {config && config.env && (
             <div className="grid gap-2">
-              <h2 className="text-foreground dark:text-gray-100">env</h2>
-              {Object.entries(config.env).map(([key, value]) => (
-                <div key={key} className="grid grid-cols-2 items-center gap-2">
-                  <Label className="col-span-1 text-foreground dark:text-gray-100">{key}</Label>
+              <h2 className="text-foreground dark:text-gray-200">env</h2>
+              <div className="space-y-2">
+              {Object.entries(config.env).map(([key, value], envIndex) => (
+                <div
+                  key={envIndex}
+                  className="grid grid-cols-2 items-center gap-2"
+                >
+                  <Label className="col-span-1 text-foreground dark:text-gray-200">
+                    {key}
+                  </Label>
                   <Input
-                    className="col-span-3 dark:bg-gray-700 dark:border-gray-600"
-                    value={value}
-                    onChange={(e) => handleEnvChange(key, e.target.value)}
+                    className="col-span-3 dark:bg-gray-800 dark:border-gray-500 dark:text-white"
+                    value={envValues[key] || ''}
+                    placeholder={value}
+                    onChange={(e) => {
+                      setEnvValues(prev => ({ ...prev, [key]: e.target.value }));
+                      handleEnvChange(key, e.target.value || value);
+                    }}
                     required
                   />
                 </div>
               ))}
             </div>
+            </div>
           )}
         </div>
-        <Button onClick={(e) => {
-          e.preventDefault(); // Prevent default form submission behavior
-          handleSubmit();
-        }}>
+        <Button
+          onClick={(e) => {
+            e.preventDefault(); // Prevent default form submission behavior
+            handleSubmit();
+          }}
+        >
           {t("addTo")} {selectedApp}
         </Button>
       </DialogContent>
     </Dialog>
   );
-}
+});
+
+ServerConfigDialog.displayName = "ServerConfigDialog";

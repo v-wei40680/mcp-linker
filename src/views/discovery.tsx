@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
-import { ClientList } from "@/components/client-list";
+import { ServerList } from "@/components/server-list";
+import { fetchServers } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 interface Props {
   selectedApp: string;
@@ -8,6 +10,19 @@ interface Props {
 
 export default function Discovery({ selectedApp, selectedPath }: Props) {
   const { t } = useTranslation();
+  
+  const { data, isLoading } = useQuery({
+    queryKey: ['servers'], // Add page number to query key
+    queryFn: () => fetchServers(),
+    staleTime: 1000 * 60 * 5,
+    retry: 2,
+    refetchOnWindowFocus: false // Prevent refetching on window focus
+  });
+
+  if (isLoading) {
+    return <div className="p-8">Loading servers...</div>;
+  }
+
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">
@@ -28,7 +43,16 @@ export default function Discovery({ selectedApp, selectedPath }: Props) {
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
         {t("featuredApps")}
       </h2>
-      <ClientList selectedApp={selectedApp} selectedPath={selectedPath} />
+
+      {!data?.servers ? (
+        <div className="p-8">No servers available</div>
+      ) : (
+        <ServerList 
+          selectedApp={selectedApp} 
+          selectedPath={selectedPath} 
+          mcpServers={data.servers} 
+        />
+      )}
     </div>
   );
 }

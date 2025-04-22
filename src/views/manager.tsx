@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState, useEffect } from "react";
-import { ServerCard } from "./ServerCard";
+import { ServerCard } from "@/components/ServerCard";
 import { ConfigType } from "@/types/config";
 import { toast } from "sonner";
-import { needspathClient } from "@/lib/data";
+// import { needspathClient } from "@/lib/data";
 
 interface McpServerProps {
   selectedApp: string;
@@ -19,9 +19,7 @@ export default function McpManage({
   });
 
   useEffect(() => {
-    if (!needspathClient.includes(selectedApp) || selectedPath) {
-      loadConfig();
-    }
+    loadConfig();
   }, [selectedApp, selectedPath]);
 
   async function loadConfig() {
@@ -32,6 +30,9 @@ export default function McpManage({
       });
       if (data) {
         setConfig(data);
+      } else {
+        setConfig({mcpServers: {}});
+
       }
     } catch (error) {
       console.error(`Error loading config: ${error}`);
@@ -70,6 +71,7 @@ export default function McpManage({
         path: selectedPath || undefined,
         serverName: key,
       });
+      await loadConfig();
       toast.success("Configuration deleted successfully");
     } catch (error) {
       // If backend operation fails, restore the previous state
