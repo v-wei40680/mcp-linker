@@ -36,7 +36,7 @@ export const ServerConfigDialog = forwardRef<
   selectedApp,
   selectedPath,
   mcpServers,
-}, ref) => {
+}) => {
   const [serverName, setServerName] = useState<string>('');
   const [config, setConfig] = useState<ServerConfig | null>(null);
   const [curIndex, setCurIndex] = useState<number>(0);

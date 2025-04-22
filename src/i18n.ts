@@ -52,7 +52,7 @@ const resources = {
       get: "Get",
       install: "Install",
       addTo: "Add to",
-      appStore: "MCP Store",
+      appStore: "MCP Linker",
       categories: {
         discover: "Discover",
         arcade: "Arcade",

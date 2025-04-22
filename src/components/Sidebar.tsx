@@ -1,13 +1,12 @@
-import { Github } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { open } from "@tauri-apps/plugin-shell";
 import { ModeToggle } from "./mode-toggle";
 import { Category } from "@/types";
 
 interface SidebarProps {
-appCategories: Category[];
-selectedCategory: Category;
-setSelectedCategory: React.Dispatch<React.SetStateAction<Category>>;
+  appCategories: Category[];
+  selectedCategory: Category;
+  setSelectedCategory: React.Dispatch<React.SetStateAction<Category>>;
 }
 
 export const Sidebar = ({ appCategories, selectedCategory, setSelectedCategory }: SidebarProps) => {
@@ -17,11 +16,11 @@ export const Sidebar = ({ appCategories, selectedCategory, setSelectedCategory }
     <div className="w-64 bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
       <div className="p-4">
         <div className="flex gap-2 cursor-pointer hover:text-blue-500 hover:underline">
-          <Github />
           <a
-            onClick={() => open("https://github.com/milisp/mcp-store")}
-            className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2"
+            onClick={() => open("https://github.com/milisp/mcp-linker")}
+            className="flex text-xl font-bold text-gray-800 dark:text-gray-100 mb-2"
           >
+            <img src="../src/assets/logo.png" alt="Logo" style={{ width: 32, height: 32 }} />
             {t("appStore")}
           </a>
         </div>
@@ -32,11 +31,10 @@ export const Sidebar = ({ appCategories, selectedCategory, setSelectedCategory }
               <li key={category.id}>
                 <button
                   onClick={() => setSelectedCategory(category)}
-                  className={`flex items-center w-full px-4 py-3 rounded-lg text-left ${
-                    selectedCategory.id === category.id
-                      ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                  }`}
+                  className={`flex items-center w-full px-4 py-3 rounded-lg text-left ${selectedCategory.id === category.id
+                    ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
                 >
                   <span className="mr-3">{category.icon}</span>
                   <span className="font-medium">{category.name}</span>

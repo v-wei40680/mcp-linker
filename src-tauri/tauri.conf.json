@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/v2/config.json",
-  "productName": "MCP Store",
-  "version": "0.1.1",
-  "identifier": "com.mcp-store.app",
+  "productName": "MCP Linker",
+  "version": "1.0.0",
+  "identifier": "com.milisp.mcplinker",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "mcp-store",
+        "title": "mcp-linker",
         "width": 1280,
         "height": 960
       }
