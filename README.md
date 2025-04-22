@@ -14,6 +14,18 @@ Easily add a **Model Context Protocol (MCP) server** to your MCP client (**Claud
 ✅ Supports multiple MCP server configurations  
 ✅ Open-source and community-driven  
 
+## Install
+
+```bash
+git clone https://github.com/milisp/mcp-linker
+bun install
+bun tauri dev
+# yarn install
+# yarn tauri dev
+# pnpm install
+# pnpm tauri dev
+```
+
 ## Quick Start
 
 1. **Browse & Select**: Choose an MCP server from the available list.  
