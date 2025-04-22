@@ -35,6 +35,13 @@ Check out the list of [official MCP servers](https://github.com/modelcontextprot
 ### Manage Example
 ![Manage Screenshot](./images/manager.png)
 
+## 🔽 Download MCP Linker
+
+👉 [Download on Gumroad](https://wei40680.gumroad.com/l/jdbuvc?wanted=true)  
+MacOS app to manage Claude MCP servers easily.
+
+---
+
 ## Contributing
 
 We welcome contributions! To add your own MCP server:
