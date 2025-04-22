@@ -2,6 +2,17 @@
   <img src="src/assets/logo.png" alt="Project Logo" width="200" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/milisp/mcp-linker/stargazers">
+    ⭐ If you find this project useful, please consider giving it a star!
+  </a>
+  <br/>
+  <a href="https://github.com/milisp/mcp-linker">
+    <img src="https://img.shields.io/github/stars/milisp/mcp-linker?style=social" alt="GitHub stars"/>
+    <img src="https://img.shields.io/github/forks/milisp/mcp-linker?style=social" alt="GitHub forks"/>
+  </a>
+</p>
+
 # MCP Linker
 
 👉 [查看中文版本（简体中文）](./README.zh-CN.md)

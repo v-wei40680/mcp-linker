@@ -1,3 +1,18 @@
+<p align="center">
+  <img src="src/assets/logo.png" alt="Project Logo" width="200" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/milisp/mcp-linker/stargazers">
+    ⭐ 如果你觉得这个项目对你有帮助，欢迎点个 star 支持一下！
+  </a>
+  <br/>
+  <a href="https://github.com/milisp/mcp-linker">
+    <img src="https://img.shields.io/github/stars/milisp/mcp-linker?style=social" alt="GitHub stars"/>
+    <img src="https://img.shields.io/github/forks/milisp/mcp-linker?style=social" alt="GitHub forks"/>
+  </a>
+</p>
+
 # MCP Linker
 
 轻松将 **Model Context Protocol (MCP) 服务器** 添加到你的 MCP 客户端（例如 Claude Cursor windsurf...），只需两步操作：**获取** 与 **添加**。
@@ -7,6 +22,18 @@
 ✅ 一键添加 MCP 服务器  
 ✅ 支持多个 MCP 服务器配置  
 ✅ 开源并由社区驱动  
+
+## 安装
+
+```bash
+git clone https://github.com/milisp/mcp-linker
+bun install
+bun tauri dev
+# yarn install
+# yarn tauri dev
+# pnpm install
+# pnpm tauri dev
+```
 
 ## 快速开始
 
