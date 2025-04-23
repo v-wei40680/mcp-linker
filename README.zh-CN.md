@@ -15,7 +15,7 @@
 
 # MCP Linker
 
-轻松将 **Model Context Protocol (MCP) 服务器** 添加到你的 MCP 客户端（例如 Claude Cursor windsurf...），只需两步操作：**获取** 与 **添加**。
+轻松将 **Model Context Protocol (MCP) 服务器** 添加到你的 MCP 客户端（例如 Claude Cursor windsurf...），只需两步操作：**获取** 与 **添加**。支持 macos win
 
 ## 功能特色
 
@@ -55,6 +55,15 @@ bun tauri dev
 
 ### 管理示例
 ![管理截图](./images/manager.png)
+
+## 🔽 Download MCP Linker
+
+👉 [Download on Gumroad](https://wei40680.gumroad.com/l/jdbuvc?wanted=true)  
+app to manage Claude MCP servers easily.
+
+👉 [Download on github release](https://github.com/milisp/mcp-linker/releases)
+
+---
 
 ## 参与贡献
 

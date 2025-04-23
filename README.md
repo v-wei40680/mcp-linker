@@ -17,7 +17,7 @@
 
 👉 [查看中文版本（简体中文）](./README.zh-CN.md)
 
-Easily add a **Model Context Protocol (MCP) server** to your MCP client (**Claude Cursor windsurf...**) with just two clicks: **Get** and **Add**.
+Easily add a **Model Context Protocol (MCP) server** to your MCP client (**Claude Cursor windsurf...**) with just two clicks: **Get** and **Add**. Support macos win
 
 ## Features
 
@@ -61,7 +61,9 @@ Check out the list of [official MCP servers](https://github.com/modelcontextprot
 ## 🔽 Download MCP Linker
 
 👉 [Download on Gumroad](https://wei40680.gumroad.com/l/jdbuvc?wanted=true)  
-MacOS app to manage Claude MCP servers easily.
+app to manage Claude MCP servers easily.
+
+👉 [Download on github release](https://github.com/milisp/mcp-linker/releases)
 
 ---
 
