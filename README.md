@@ -17,9 +17,16 @@
 
 👉 [查看中文版本（简体中文）](./README.zh-CN.md)
 
+## 🔽 Download MCP Linker
+
+👉 [Download on 🐙Gumroad](https://wei40680.gumroad.com/l/jdbuvc?wanted=true)  
+app to manage Claude MCP servers easily.
+
+👉 [Download on github release](https://github.com/milisp/mcp-linker/releases)
+
 Easily add a **Model Context Protocol (MCP) server** to your MCP client (**Claude Cursor windsurf...**) with just two clicks: **Get** and **Add**. Support macos win
 
-## Features
+## ✨ Features
 
 ✅ One-click to add MCP servers  
 ✅ Supports multiple MCP server configurations  
@@ -37,17 +44,17 @@ bun tauri dev
 # pnpm tauri dev
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 1. **Browse & Select**: Choose an MCP server from the available list.  
 2. **Install**: Click **"Get"** to show configure of server.  
 3. **Activate**: Click **"Add"** to integrate it with your MCP client.  
 
-## Official Servers
+## 🌐 Official Servers
 
 Check out the list of [official MCP servers](https://github.com/modelcontextprotocol/servers).
 
-## Screenshots
+## 🖼️ Screenshots
 
 ### Server Discovery
 ![Discover Screenshot](./images/home.png)
@@ -58,16 +65,9 @@ Check out the list of [official MCP servers](https://github.com/modelcontextprot
 ### Manage Example
 ![Manage Screenshot](./images/manager.png)
 
-## 🔽 Download MCP Linker
-
-👉 [Download on Gumroad](https://wei40680.gumroad.com/l/jdbuvc?wanted=true)  
-app to manage Claude MCP servers easily.
-
-👉 [Download on github release](https://github.com/milisp/mcp-linker/releases)
-
 ---
 
-## Contributing
+## 🤝 Contributing
 
 We welcome contributions! To add your own MCP server:
 
