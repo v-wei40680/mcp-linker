@@ -1,0 +1,56 @@
+name: Build and Package Tauri App on Debian with Bun (Multi-Arch)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - '.github/workflows/ci-linux.yml'
+      - 'src/**'
+      - 'src-tauri/**'
+      - 'package.json'
+jobs:
+  build-package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [ x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu ]
+        artifact_name: [ tauri-app-debian-x64, tauri-app-debian-arm64 ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build Tauri app (Debian ${{ matrix.target }})
+        run: |
+          bun tauri build --target ${{ matrix.target }}
+
+      - name: Upload Debian package (${{ matrix.artifact_name }})
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: src-tauri/target/${{ matrix.target }}/release/*.deb
+
+      # Optional: Add steps for releasing or further deployment
+      # Example:
+      # - name: Create GitHub Release
+      #   uses: softprops/action-gh-release@v1
+      #   if: github.ref == 'refs/heads/main'
+      #   with:
+      #     files: |
+      #       src-tauri/target/x86_64-unknown-linux-gnu/release/*.deb
+      #       src-tauri/target/aarch64-unknown-linux-gnu/release/*.deb
+      #     tag_name: v${{ github.run_number }}-multiarch
+      #     name: Debian Multi-Arch Release v${{ github.run_number }}
