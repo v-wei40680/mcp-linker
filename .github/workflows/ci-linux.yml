@@ -20,6 +20,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add target ${{ matrix.target }}
+        run: rustup target add ${{ matrix.target }}
+
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
         with:
