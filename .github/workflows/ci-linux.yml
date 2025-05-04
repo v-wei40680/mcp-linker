@@ -1,43 +1,43 @@
-name: Build and Package Tauri App (Debian Multi-Arch with Cross)
+name: Build and Package Tauri App (x86_64 + aarch64)
 
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - '.github/workflows/ci-linux.yml'
-      - 'src/**'
-      - 'src-tauri/**'
-      - 'package.json'
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  build:
+  build-x86_64:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - target: x86_64-unknown-linux-gnu
-            artifact_name: tauri-app-debian-x64
-          - target: aarch64-unknown-linux-gnu
-            artifact_name: tauri-app-debian-arm64
-
+    name: Build x86_64 Linux (.deb)
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            pkg-config \
+            libglib2.0-dev \
+            libgtk-3-dev
 
-      - name: Install cross
-        run: cargo install cross
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
 
-      - name: Install Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -45,12 +45,53 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Build with cross for ${{ matrix.target }}
+      - name: Build x86_64 Tauri App
         run: |
-          bunx tauri build --target ${{ matrix.target }}
+          bun tauri build --target x86_64-unknown-linux-gnu
 
-      - name: Upload Debian Package (${{ matrix.artifact_name }})
+      - name: Upload Artifact (.deb)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact_name }}
-          path: src-tauri/target/${{ matrix.target }}/release/bundle/deb/*.deb
+          name: tauri-app-debian-x64
+          path: src-tauri/target/x86_64-unknown-linux-gnu/release/*.deb
+
+  build-aarch64:
+    runs-on: ubuntu-latest
+    name: Cross Build aarch64 Linux (.deb)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Docker (for cross)
+        run: |
+          sudo apt update
+          sudo apt install -y docker.io
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Cross build aarch64 Tauri App
+        run: |
+          cross build --release --target aarch64-unknown-linux-gnu
+          # Optional: custom packaging .deb if tauri build doesn't run inside cross
+          # or use tauri-cli to package with existing binaries
+
+      - name: Upload Artifact (.deb)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-app-debian-arm64
+          path: src-tauri/target/aarch64-unknown-linux-gnu/release/*.deb
