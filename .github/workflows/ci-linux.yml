@@ -49,23 +49,24 @@ jobs:
         run: |
           bun tauri build --target x86_64-unknown-linux-gnu
 
-      - name: Upload Artifact (.deb)
+      - name: Upload Artifact (.deb,rpm,AppImage)
         uses: actions/upload-artifact@v4
         with:
           name: tauri-app-debian-x64
-          path: src-tauri/target/x86_64-unknown-linux-gnu/release/*.deb
+          path: |
+            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.deb
+            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.rpm
+            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.AppImage
 
   build-aarch64:
     runs-on: ubuntu-latest
-    name: Cross Build aarch64 Linux (.deb)
+    name: Cross Build aarch64 Linux
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Docker (for cross)
-        run: |
-          sudo apt update
-          sudo apt install -y docker.io
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -94,4 +95,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tauri-app-debian-arm64
-          path: src-tauri/target/aarch64-unknown-linux-gnu/release/*.deb
+          path: |
+            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.deb
+            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.rpm
+            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.AppImage
