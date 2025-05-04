@@ -54,48 +54,6 @@ jobs:
         with:
           name: tauri-app-debian-x64
           path: |
-            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.deb
-            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.rpm
-            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.AppImage
-
-  build-aarch64:
-    runs-on: ubuntu-latest
-    name: Cross Build aarch64 Linux
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install cross
-        run: cargo install cross --git https://github.com/cross-rs/cross
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Cross build aarch64 Tauri App
-        run: |
-          cross build --release --target aarch64-unknown-linux-gnu
-          # Optional: custom packaging .deb if tauri build doesn't run inside cross
-          # or use tauri-cli to package with existing binaries
-
-      - name: Upload Artifact (.deb)
-        uses: actions/upload-artifact@v4
-        with:
-          name: tauri-app-debian-arm64
-          path: |
-            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.deb
-            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.rpm
-            src-tauri/target/aarch64-unknown-linux-gnu/release/**/*.AppImage
+            src-tauri/target/x86_64-unknown-linux-gnu/release/**/*.deb
+            src-tauri/target/x86_64-unknown-linux-gnu/release/**/*.rpm
+            src-tauri/target/x86_64-unknown-linux-gnu/release/**/*.AppImage
