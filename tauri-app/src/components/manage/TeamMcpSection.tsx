@@ -1,35 +1,34 @@
+import { EmptyState } from "@/components/manage/EmptyState";
 import { TeamCloudMcpTable } from "@/components/manage/team/TeamCloudMcpTable";
 import { TeamLocalMcpTable } from "@/components/manage/team/TeamLocalMcpTable";
 import { TeamSelector } from "@/components/manage/team/TeamSelector";
 import { ConfigFileSelector } from "@/components/settings/ConfigFileSelector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Cloud } from "lucide-react";
-import { useNavigate } from "react-router";
 
-/**
- * Props for TeamTabsSection component.
- */
-interface TeamTabsSectionProps {
+interface TeamMcpSectionProps {
   teamTab: string;
   setTeamTab: (tab: string) => void;
-  selectedTeamId: string | null;
   isAuthenticated: boolean;
+  teamCount: number;
+  selectedTeamId: string | null;
   userLoading: boolean;
-  user: any;
+  hasTrial: boolean;
+  isTeamUser: boolean;
+  navigate: (to: string) => void;
 }
 
-/**
- * Component for rendering the team tabs, selectors, and tables.
- */
-export function TeamTabsSection({
+export function TeamMcpSection({
   teamTab,
   setTeamTab,
-  selectedTeamId,
   isAuthenticated,
+  teamCount,
+  selectedTeamId,
   userLoading,
-}: TeamTabsSectionProps) {
-  const navigate = useNavigate();
-
+  hasTrial,
+  isTeamUser,
+  navigate,
+}: TeamMcpSectionProps) {
   return (
     <Tabs
       value={teamTab}
@@ -50,45 +49,40 @@ export function TeamTabsSection({
           </TabsTrigger>
         </TabsList>
 
-        {selectedTeamId ? (
+        {(hasTrial || isTeamUser) && teamCount > 0 && (
           <>
-            <span className="whitespace-nowrap font-semibold">Team</span>
+            <span>Team</span>
             <TeamSelector />
             <ConfigFileSelector />
           </>
-        ) : (
-          <button
-            onClick={() => navigate("/team")}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            Create team
-          </button>
         )}
       </div>
+      
       <TabsContent value="teamLocal" className="flex-1 min-h-0">
         <TeamLocalMcpTable />
       </TabsContent>
+      
       <TabsContent value="teamCloud" className="flex-1 min-h-0">
         {!isAuthenticated ? (
-          <div className="flex justify-center items-center h-full text-muted-foreground">
-            Please log in to view your team cloud servers.
-          </div>
-        ) : !selectedTeamId ? (
-          <div className="flex flex-col justify-center items-center h-full text-muted-foreground space-y-4">
-            <p>No team selected. Please select a team or create one.</p>
-            <button
-              onClick={() => navigate("/team")}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              Go to Teams
-            </button>
-          </div>
+          <EmptyState
+            description="Please log in to view your team cloud servers."
+          />
+        ) : teamCount === 0 || !selectedTeamId ? (
+          <EmptyState
+            description={teamCount === 0 
+              ? "No teams found. Create your first team to get started."
+              : "No team selected. Please select a team or create one."}
+            buttonText={teamCount === 0 ? "Create first team" : "Go to Teams"}
+            onButtonClick={() => navigate("/team")}
+          />
         ) : userLoading ? (
-          <div className="flex justify-center items-center h-full text-muted-foreground">
-            Loading user info...
-          </div>
+          <EmptyState
+            description="Loading user info..."
+          />
         ) : (
-          <TeamCloudMcpTable />
+          <div>
+            <TeamCloudMcpTable />
+          </div>
         )}
       </TabsContent>
     </Tabs>
