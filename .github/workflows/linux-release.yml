@@ -1,4 +1,4 @@
-name: Build and Package Tauri App (x86_64 + aarch64)
+name: Linux
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
 
 jobs:
   build-x86_64:
-    runs-on: ubuntu-20.04
-    name: Build x86_64 Linux (.deb)
+    runs-on: ubuntu-22.04
+    name: Build x86_64 Linux
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
