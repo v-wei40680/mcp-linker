@@ -57,4 +57,3 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-          working-directory: tauri-app
