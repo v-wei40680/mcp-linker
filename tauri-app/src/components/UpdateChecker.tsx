@@ -209,16 +209,10 @@ export function UpdateChecker() {
               >
                 Remind me later
               </Button>
-              {import.meta.env.DEV ?
-                <Button onClick={downloadAndInstall}>
-                  Update Now (no ok, under test)
-                </Button>
-                : 
-                <Button onClick={() => open('https://github.com/milisp/mcp-linker/releases')}>
-                  Go to Download page
-                </Button>
-              }
-              </div>
+              <Button onClick={downloadAndInstall}>
+                Update Now (no ok, under test)
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
