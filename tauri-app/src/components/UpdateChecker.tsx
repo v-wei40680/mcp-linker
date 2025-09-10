@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { open } from "@tauri-apps/plugin-shell";
 import { check, Update } from "@tauri-apps/plugin-updater";
 import { useEffect, useState } from "react";
 
