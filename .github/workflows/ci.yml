@@ -1,21 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/ci.yml"
-      - "tauri-app/src/**"
-      - "tauri-app/src-tauri/**"
-      - "tauri-app/package.json"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "tauri-app/src/**"
-      - "tauri-app/src-tauri/**"
-      - "tauri-app/package.json"
+  workflow_dispatch:
 
 env:
   VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
